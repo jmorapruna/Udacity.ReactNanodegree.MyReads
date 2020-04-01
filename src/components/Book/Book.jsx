@@ -1,4 +1,5 @@
 import React from 'react';
+import './Book.css';
 
 function Book({ book, changeBookshelf }) {
   const { title, authors = [], imageLinks, shelf } = book;
