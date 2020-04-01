@@ -1,32 +1,81 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import Book from '../Book/Book';
+import * as BookAPI from '../../services/BooksAPI';
+import debounce from 'lodash/debounce'
 
-class BookSearch extends Component {
+class SearchPage extends Component {
 
-    render() {
-        return (
-            <div className="search-books">
-                <div className="search-books-bar">
-                    <Link to="/" className="close-search">Close</Link>
-                    <div className="search-books-input-wrapper">
-                        {/*
-                        NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                        You can find these search terms here:
-                        https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
+  state = {
+    searchText: '',
+    foundBooks: [],
+  }
 
-                        However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                        you don't find a specific author or title. Every search is limited by search terms.
-                        */}
-                        <input type="text" placeholder="Search by title or author" />
+  changeBookshelf = async (book, shelf) => {
+    await BookAPI.update(book, shelf);
 
-                    </div>
-                </div>
-                <div className="search-books-results">
-                    <ol className="books-grid"></ol>
-                </div>
-            </div>
-        );
+    this.setState(state => ({
+      ...state,
+      foundBooks: state.foundBooks.map(b => book === b ?
+        { ...b, shelf }
+        : b)
+    }));
+  };
+
+  searchChanged = debounce(async (text) => {
+    let foundBooks = [];
+
+    if (text) {
+      try {
+        const result = await BookAPI.search(text);
+
+        if (!result.error)
+          foundBooks = result;
+
+      } catch (e) { }
     }
+
+    this.setState({
+      foundBooks
+    });
+  }, 300);
+
+  handleSearch = (searchText) => {
+    this.setState({
+      searchText,
+    });
+
+    this.searchChanged(searchText);
+  }
+
+  render() {
+    const { searchText, foundBooks } = this.state;
+
+    return (
+      <div className="search-books">
+        <div className="search-books-bar">
+          <Link to="/" className="close-search">Close</Link>
+          <div className="search-books-input-wrapper">
+            <input
+              type="text"
+              placeholder="Search by title or author"
+              value={searchText}
+              onChange={e => this.handleSearch(e.target.value)} />
+
+          </div>
+        </div>
+        <div className="search-books-results">
+          <ol className="books-grid">
+            {
+              foundBooks.map(book => (<li key={book.id}>
+                <Book book={book} changeBookshelf={this.changeBookshelf} />
+              </li>))
+            }
+          </ol>
+        </div>
+      </div>
+    );
+  }
 }
 
-export default BookSearch;
+export default SearchPage;

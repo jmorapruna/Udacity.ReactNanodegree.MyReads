@@ -1,14 +1,17 @@
 import React from 'react';
 
 function Book({ book, changeBookshelf }) {
-  const { title, authors, imageLinks, shelf } = book;
+  const { title, authors = [], imageLinks, shelf } = book;
+
+  const imageUrl = (imageLinks && imageLinks.smallThumbnail) || undefined;
+  const backgroundImage = imageUrl ? `url(${imageUrl})` : undefined;
 
   return (
     <div className="book">
       <div className="book-top">
-        <div className="book-cover" style={{ width: 128, minHeight: 192, backgroundImage: `url(${imageLinks.smallThumbnail})` }}></div>
+        <div className="book-cover" style={{ width: 128, minHeight: 192, backgroundImage }}></div>
         <div className="book-shelf-changer">
-          <select value={shelf} onChange={(e) => changeBookshelf(book, e.target.value)}>
+          <select value={shelf || "none"} onChange={(e) => changeBookshelf(book, e.target.value)}>
             <option value="move" disabled>Move to...</option>
             <option value="currentlyReading">Currently Reading</option>
             <option value="wantToRead">Want to Read</option>

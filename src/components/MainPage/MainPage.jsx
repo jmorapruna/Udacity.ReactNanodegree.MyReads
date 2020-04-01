@@ -26,7 +26,10 @@ class MainPage extends Component {
   }
 
   async componentDidMount() {
-    const books = await BookAPI.getAll();
+    let books = [];
+    try {
+      books = await BookAPI.getAll();
+    } catch (e) {}
 
     this.setState({
       books
@@ -34,14 +37,16 @@ class MainPage extends Component {
   }
 
   changeBookshelf = async (book, shelf) => {
-    await BookAPI.update(book, shelf);
+    try {
+      await BookAPI.update(book, shelf);
 
-    this.setState(state => ({
-      ...state,
-      books: state.books.map(b => book === b ?
-        { ...b, shelf }
-        : b)
-    }));
+      this.setState(state => ({
+        ...state,
+        books: state.books.map(b => book === b ?
+          { ...b, shelf }
+          : b)
+      }));
+    } catch (e) {}
   }
 
   render() {
